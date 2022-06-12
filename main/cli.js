@@ -1,12 +1,14 @@
 import * as readline from 'node:readline';
-import { byeUser, currentDir } from '../utils/notifications.js';
+import { byeUser, currentDir, invalidInput } from '../utils/notifications.js';
 import { osCommandHandler } from './os.js';
 import { up, cd, ls } from './nav.js';
-import { cat, add, rn } from './fs.js';
+import { cat, add, rn, cp, rm, mv } from './fs.js';
 import { compress, decompress } from './zip.js';
 import { calculateHash } from './hash.js';
 import { EventEmitter } from 'events';
 import { state } from '../main/state.js'
+import os from 'os';
+
 
 state.eventEmitter = new EventEmitter;
 let rl;
@@ -18,10 +20,10 @@ export const initCLI = () => {
         prompt: 'WRITE_HERE> ',
     });
 
+    currentDir();
     rl.prompt();
 
     rl.on('line', (line) => {
-        currentDir();
         parseInput(line)
     }).on('close', () => {
         byeUser();
@@ -29,6 +31,7 @@ export const initCLI = () => {
     });
 
     state.eventEmitter.on('jobDone', () => {
+        console.log(os.EOL);
         currentDir();
         rl.prompt();
     });
@@ -57,16 +60,13 @@ export const parseInput = (input) => {
             rn(args[0], args[1]);
             break
         case 'cp':
-
+            cp(args[0], args[1]);
             break
         case 'mv':
-
-            break
-        case 'add':
-
+            mv(args[0], args[1]);
             break
         case 'rm':
-
+            rm(args[0]);
             break
         case 'os':
             osCommandHandler(args);
@@ -80,8 +80,12 @@ export const parseInput = (input) => {
         case 'decompress':
             decompress(args[0], args[1]);
             break
+        case '.exit':
+            byeUser();
+            process.exit(0);
+            break
         default:
-            console.log(`Invalid input: ${command}`);
+            invalidInput();
             state.eventEmitter.emit('jobDone');
     }
 }

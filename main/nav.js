@@ -30,7 +30,7 @@ export const cd = async (_path) => {
             state.eventEmitter.emit('jobDone');
         }
     } else {
-        const fullPath = `${state.currentDirectory}/${_path}`;
+        const fullPath = path.resolve(state.currentDirectory, _path);
         const isPathExist = await checkFileExist(fullPath);
         if (isPathExist) {
             state.currentDirectory = fullPath;
@@ -43,10 +43,13 @@ export const cd = async (_path) => {
 };
 
 export const up = async () => {
-    if (state.homeDirectory === state.currentDirectory) {
+    const splitedPath = state.currentDirectory.split(path.sep)
+    if (splitedPath.length <= 1) {
         state.eventEmitter.emit('jobDone')
         return
     } else {
-
+       splitedPath.pop();
+       state.currentDirectory = splitedPath.join(path.sep)
+       state.eventEmitter.emit('jobDone')
     }
 };

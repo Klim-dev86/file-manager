@@ -1,7 +1,7 @@
 import { state } from '../main/state.js';
 import { access } from 'fs/promises';
 import os from 'os';
-import { invalidInput } from './notifications.js';
+import { operationFailed } from './notifications.js';
 
 
 import path from 'path';
@@ -38,17 +38,17 @@ export const checkPathExistAndExecCb = async (_path, cb) => {
             await cb(_path)
             state.eventEmitter.emit('jobDone');
         } else {
-            invalidInput();
+            operationFailed();
             state.eventEmitter.emit('jobDone');
         }
     } else {
-        const fullPath = `${state.currentDirectory}${path.sep}${_path}`;
+        const fullPath = path.resolve(state.currentDirectory, _path);
         const isPathExist = await checkFileExist(fullPath);
         if (isPathExist) {
             await cb(fullPath)
             state.eventEmitter.emit('jobDone');
         } else {
-            invalidInput();
+            operationFailed();
             state.eventEmitter.emit('jobDone');
         }
     }
@@ -59,17 +59,17 @@ export const checkPathEmptyAndExecCb = async (_path, cb) => {
         const isPathExist = await checkFileExist(_path);
 
         if (isPathExist) {
-            invalidInput();
+            operationFailed();
             state.eventEmitter.emit('jobDone');
         } else {
             await cb(_path)
             state.eventEmitter.emit('jobDone');
         }
     } else {
-        const fullPath = `${state.currentDirectory}${path.sep}${_path}`;
+        const fullPath = path.resolve(state.currentDirectory, _path);
         const isPathExist = await checkFileExist(fullPath);
         if (isPathExist) {
-            invalidInput();
+            operationFailed();
             state.eventEmitter.emit('jobDone');
         } else {
             await cb(fullPath)
